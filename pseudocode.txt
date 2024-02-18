@@ -1,0 +1,162 @@
+
+Mesh(){
+  Generate VBO,EBO,VAO;
+  VBO.Bind();
+  VBO.BindData(vertices);
+
+  VAO.BindData(vertices, normals, textureUVs);
+  EBO.BindData(indices);
+
+  Shader = CreateShader();
+  Mat4 ViewMatrix,ProjectionMatrix;
+
+  Shader.set(ViewMatrix,ProjectionMatrix);
+  Draw(Shader,Camera)
+}
+
+
+Camera(){
+  
+  width, height ,position;
+  view = lookAt(Position, Position + Orientation, Up);
+  projection = perspective(FieldOfView),ratio, NearPlane, FarPlane);
+  cameraMatrix = projection * view;
+
+  HandleInputs(){
+    if(Key){
+      ......
+    }
+    if(MouseMovement when Pressed){
+      CalculateRotation(MouseX,MouseY){
+        rotateX = sensitivity * (mouseY - (height / 2)) / height;
+        rotateY = sensitivity * (mouseX - (width / 2)) / width;
+      };
+      Orientation = rotate(Orientation, (-rotateY), Up);
+
+    }
+  }
+}
+
+
+Model(3DModelPath){
+  
+  position, model ;
+  meshes[], vertices[] , indices[] , textures[][];
+  for each mesh in scene:
+    meshes[i] = ProcessMesh();
+    textures[i] = Texture();
+
+  Draw(ShaderProgram,camera);
+  UpdateCamera(ShaderProgram,camera);
+  UpdateLight(ShaderProgram, lightColor, lightPosition);
+
+}
+
+Model1();
+Model2();
+Model3();
+Model4();
+
+while(){
+    Model1.position = updatedPosition1;
+    Model2.position = updatedPosition2;
+    Model3.position = updatedPosition3;
+    Model4.position = updatedPosition4;
+}
+
+
+Texture(){
+  type,slot,id;
+  image_data = stbi_load(image);
+  id = GenerateTexture();
+  ActivateSlot(slot);
+  BindTexture(id);
+
+  if(type == diffuse){
+    setUniform(diffuse0);
+  }
+  else if(type == specular){
+    setUniform(specular0);
+  }
+  else if(type == normal){
+    setUniform(normal0);
+  }
+}
+
+
+FragmentShader.glsl{
+  normal = normal(texture(normal0,texCordinate)*2.0f - 1.0f);
+  .
+  .
+  calculate diffuse and specular light;
+  .
+  .
+  FragColor = texture(diffuse0,texCord) + texture(specular0,texCord);
+}
+
+
+FragmentShader.glsl{
+    in Color, TexCord ,Normal, CurrentPosition, FragPositionLight;
+
+    uniform sampler2D diffuse0;
+    uniform sampler2D specular0;
+    uniform sampler2D normal0;
+    uniform sampler2D shadowMap;
+
+    uniform vec4 lightColor;
+    uniform vec3 lightPosition;
+    uniform vec3 CameraPosition;
+
+    CalculateLight(power){
+        LightVector = lightPosition - CurrentPosition;
+        distance = length(LightVector);
+
+        a = 3.1f;
+        b = 1.2f;
+
+        intensity = 1.0f / (a*distance*distance + b*distance + 1.0f);
+        
+        normal = normalize(Normal);
+        lightDirection = normalize(lightPosition - CurrentPosition);
+        diffuse = max(dot(normal, lightDirection), 0.0f);
+
+        diffuse = max(diffuse,0.0);
+
+        SpecularLight = 0.5f;
+        ViewDirection = normalize(CameraPosition - CurrentPosition);
+        ReflectionDirection = reflect(-lightDirection, normal);
+
+        halfway = normalize(ViewDirection + lightDirection);
+
+        SpecularAmount = pow(max(dot(normal,halfway),0.0f),16);
+        specular = SpecularAmount * SpecularLight;
+
+        ambient = 0.20f;
+
+        return ((texture(diffuse0, TexCord) * (diffuse + ambient + intensity) + texture(specular0, TexCord).r * specular) * lightColor) * power;
+    }
+}
+
+Skymap VBO,VAO,EBO;
+BindBuffers();
+TextureID = GenerateTexture();
+for each CubeFace(){
+  FaceTexture = TextureIdD.ActivateSlot(slot)
+  TextureID.BindImageToTexture(FaceTexture);
+}
+
+projection, view;
+SkyboxShader.SetUniforms(projection,view);
+ActivateTexture();
+SkymapVAO.Draw()
+
+SpotLight(power){
+    outerCone = 0.90f;
+    innerCone = 0.95f;
+    angle = dot(vec3(0.0f,-1.0f,0.0f),-lightDirection);
+    intensity = clamp((angle - outerCone) / (innerCone - outerCone),0.0f,1.0f);
+    return ((texture(diffuse0, TexCord) * (diffuse + ambient + intensity) + texture(specular0, TexCord).r * specular  *intensity) * lightColor) * power;
+    
+}
+
+
